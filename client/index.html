@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>TOP SPEED ONLINE</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="menu" class="screen">
+  <div class="panel main">
+    <h1>TOP <span>SPEED</span> ONLINE</h1>
+    <div class="status" id="st"><i></i><b id="stTxt">Проверка сервера...</b></div>
+    <input id="nick" maxlength="16" placeholder="Ваш ник" autocomplete="off" spellcheck="false">
+    <input id="pass" type="password" maxlength="100" placeholder="Пароль администратора" class="hidden" autocomplete="off">
+    <div class="lbl">Машина: <b id="skinName">Классика</b></div>
+    <div id="skins" class="skins"></div>
+    <div class="lbl">Цвет: <b id="colName">Авто</b></div>
+    <div id="colors" class="colors"></div>
+    <div id="menuErr" class="err"></div>
+    <div class="row">
+      <button id="play" class="btn">ИГРАТЬ</button>
+      <button id="watch" class="btn ghost">СМОТРЕТЬ</button>
+    </div>
+    <details class="settings">
+      <summary>Настройки управления и звука</summary>
+      <label><input type="checkbox" id="mouseCtl"> Мышь: W / ЛКМ — газ, курсор — руль</label>
+      <label><input type="checkbox" id="sndOn" checked> Звук</label>
+      <label>Громкость <input type="range" id="vol" min="0" max="100" value="40"></label>
+      <label>Цвет дыма <input type="color" id="smokeCol" value="#e6e6e6"></label>
+      <label>Цвет выхлопа / огня <input type="color" id="exhaustCol" value="#ffb02e"></label>
+      <p class="keys"><b>W/↑</b> газ · <b>S/↓</b> тормоз и задний ход · <b>A/←</b> <b>D/→</b> поворот<br><b>Space</b> ручной тормоз · <b>R</b> вернуть на трассу<br>Мышь (галочка выше): курсор задаёт направление, ЛКМ — газ<br>Телефон/планшет: слева джойстик — руль, справа кнопки; лучше в горизонтальной ориентации</p>
+    </details>
+  </div>
+  <div class="panel side">
+    <h3>Игроки в комнате: <span id="cnt">0</span></h3>
+    <ul id="plist" class="plist"></ul>
+  </div>
+</div>
+
+<div id="hud" class="hidden">
+  <div id="info" class="card">
+    <div>КРУГ <b id="lap">1/3</b></div>
+    <div>КП <b id="cp">0/8</b></div>
+    <div>ПОЗИЦИЯ <b id="pos">-</b></div>
+    <div>ВРЕМЯ <b id="tim">0:00.000</b></div>
+    <div>КРУГ <b id="lt">0:00.000</b></div>
+    <div>ЛУЧШИЙ <b id="best">--:--.---</b></div>
+  </div>
+  <div id="right" class="card">
+    <div class="net"><span id="conn" class="ok">Подключено</span> · <b id="png">0</b> мс</div>
+    <ol id="standings"></ol>
+  </div>
+  <canvas id="mm" width="260" height="175"></canvas>
+  <div id="speedo"><b id="spd">0</b><small>км/ч</small></div>
+  <div id="leader" class="hidden"><span>ЛИДЕР</span> <b id="leadNick">—</b> <small id="leadLap"></small></div>
+  <div id="spec" class="card hidden">
+    <div class="srow">
+      <button id="spPrev" class="btn small" title="Предыдущий (←)">←</button>
+      <button id="spLead" class="btn small" title="Следить за лидером (L)">ТОП-1</button>
+      <button id="spNext" class="btn small" title="Следующий (→)">→</button>
+      <button id="spLast" class="btn small" title="Следить за последним (E)">ПОСЛЕДНИЙ</button>
+    </div>
+    <div class="sinfo">Смотрю: <b id="spName">—</b><span id="spTime"></span></div>
+    <div id="spLap" class="sdim"></div>
+    <div class="sdim">клик по таблице справа или ← → — выбор игрока</div>
+  </div>
+  <div id="lights" class="hidden"><i></i><i></i><i></i></div>
+  <div id="banner"></div>
+  <div id="center"></div>
+  <div id="lapMsg"></div>
+  <div id="toasts"></div>
+  <button id="exit" class="btn small">← ВЫХОД</button>
+
+  <div id="touch" class="hidden">
+    <div id="stick"><i id="stickKnob"></i></div>
+    <button id="tGas" class="tbtn">ГАЗ</button>
+    <button id="tBrk" class="tbtn">ТОРМОЗ</button>
+    <button id="tHb" class="tbtn">РУЧНИК</button>
+    <button id="tR" class="tbtn">СБРОС</button>
+  </div>
+
+  <div id="admin" class="card hidden">
+    <h3>АДМИНИСТРАТОР</h3>
+    <div id="admInfo"></div>
+    <ul id="admList" class="plist"></ul>
+    <button class="btn small" data-cmd="start">НАЧАТЬ ГОНОЧНЫЙ ЗАЕЗД</button>
+    <button class="btn small" data-cmd="finish">ЗАВЕРШИТЬ ГОНОЧНЫЙ ЗАЕЗД</button>
+    <button class="btn small" data-cmd="restart">ПЕРЕЗАПУСТИТЬ ЗАЕЗД</button>
+    <button class="btn small" data-cmd="grid">ВЕРНУТЬ ВСЕХ НА СТАРТ</button>
+    <button class="btn small danger" data-cmd="force">ЗАВЕРШИТЬ ТЕКУЩИЙ ЗАЕЗД</button>
+  </div>
+
+  <div id="results" class="hidden">
+    <div class="panel">
+      <h2>РЕЗУЛЬТАТЫ</h2>
+      <div id="resWin"></div>
+      <table><thead><tr><th>#</th><th>Игрок</th><th>Время</th><th>Лучший круг</th></tr></thead><tbody id="resBody"></tbody></table>
+      <button id="resClose" class="btn small">Закрыть</button>
+    </div>
+  </div>
+
+  <div id="winShow" class="hidden">
+    <div class="wpanel">
+      <div id="winTitle">ПОБЕДИТЕЛЬ</div>
+      <div id="winNick">—</div>
+      <canvas id="rpCv" width="960" height="540"></canvas>
+      <div class="wbar"><span>ПОВТОР ФИНИША</span><button id="winClose" class="btn small">Закрыть</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="physics.js"></script>
+<script src="network.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
